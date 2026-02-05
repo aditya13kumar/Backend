@@ -1,56 +1,78 @@
-// server create karna
-
 const express = require('express');
+const notemodel = require('./model/model');
 
 const app = express();
 
-app.use(express.json())
+app.use(express.json());
 
 
 
-const notes = []
 
-app.post('/notes', (req,res) => {
-   // console.log(req.body);
-   notes.push(req.body);
+/** notes = name
+ * POST / NOTES => CREATE NOTE
+ * GET / NOTES => GET ALL NOTES
+ * PATCH / NOTES:INDEX => UPDATE NOTES
+ * DELETE / NOTES:INDEX => DELETE NOTES
+ *  , about 
+ * */
 
-   res.status(201).json({
-    message: "notes created successfully"
-   });
-})
-
-app.get('/notes' , (req,res) => {
-    res.status(200).json({
-        message:"notes fetched successfully",
-        notes : notes
+app.post('/notes',async (req,res)=>{
+    const data = req.body
+    await notemodel.create({
+        name:data.name,
+        age:data.age,
+        tittle:data.tittle,
     })
+    res.status(200).json({message:"note created!!"})
 })
 
+app.get('/notes',async (req,res)=>{
+   const notes = await notemodel.find() ; // [] in array
 
-/* delete / notes / index */
+   res.status(200).json({
+    message:"notes fetched!!",
+    notes:notes
+    });
+})
 
-app.delete('/notes/:index' , (req,res) => {
+// app.get("/notes",async (req,res)=>{
+//     const notes =await notemodel.findOne({
+//         age:19
+//     })
 
-    const index = req.params.index
-    console.log(index);
+//     res.status(200).json({
+//         message:"notes finded!!",
+//         notes: notes
+//     })
+// })
 
-    delete notes[index]
 
+app.delete('/notes/:id',async (req,res)=>{
+    const id = req.params.id
+
+    await notemodel.findOneAndDelete({
+        _id: id
+    })
     res.status(200).json({
         message:"note deleted successfully"
     })
-
 })
 
-app.patch("/notes/:index" , (req,res) =>{
-    const index = req.params.index
-    const tittle = req.body.tittle
 
-    notes[index].tittle = tittle
+app.patch('/notes/:id', async (req,res)=>{
+    const id = req.params.id
+    const name = req.body.name
+
+    await notemodel.findByIdAndUpdate({_id:id},{name:name})
 
     res.status(200).json({
-        message:"note updated successfully"
+        message:"note update successfully"
     })
 })
 
+
 module.exports = app
+
+
+// mongodb+srv://backend:<db_password>@backend01.jincem5.mongodb.net/
+// mongodb+srv://backendyt:pissusinha@backend01.jincem5.mongodb.net/
